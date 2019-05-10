@@ -316,6 +316,26 @@ func (s *PullRequestsService) ListCommits(ctx context.Context, owner string, rep
 	return commits, resp, nil
 }
 
+// ListPullRequestsForCommit fetches the PullRequest objects associated with a given SHA.
+//
+// GitHub API docs: https://developer.github.com/v3/repos/commits/#list-pull-requests-associated-with-commit
+func (s *PullRequestsService) ListPullRequestsForCommit(ctx context.Context, owner string, repo string, sha string) ([]*PullRequest, *Response, error) {
+	u := fmt.Sprintf("repos/%v/%v/commits/%v/pulls", owner, repo, sha)
+	req, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Accept", "application/vnd.github.groot-preview+json")
+
+	var pulls []*PullRequest
+	resp, err := s.client.Do(ctx, req, &pulls)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return pulls, resp, nil
+}
+
 // ListFiles lists the files in a pull request.
 //
 // GitHub API docs: https://developer.github.com/v3/pulls/#list-pull-requests-files
