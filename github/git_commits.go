@@ -77,6 +77,26 @@ func (s *GitService) GetCommit(ctx context.Context, owner string, repo string, s
 	return c, resp, nil
 }
 
+// GetPullRequests fetches the PullRequest objects associated with a given SHA.
+//
+// GitHub API docs: https://developer.github.com/v3/repos/commits/#list-pull-requests-associated-with-commit
+func (s *GitService) GetPullRequests(ctx context.Context, owner string, repo string, sha string) ([]*PullRequest, *Response, error) {
+	u := fmt.Sprintf("repos/%v/%v/commits/%v/pulls", owner, repo, sha)
+	req, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Accept", "application/vnd.github.groot-preview+json")
+
+	var pulls []*PullRequest
+	resp, err := s.client.Do(ctx, req, &pulls)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return pulls, resp, nil
+}
+
 // createCommit represents the body of a CreateCommit request.
 type createCommit struct {
 	Author    *CommitAuthor `json:"author,omitempty"`
